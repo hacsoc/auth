@@ -4,6 +4,7 @@ extern crate openssl;
 #[macro_use] extern crate nickel;
 extern crate nickel_postgres;
 extern crate uuid;
+extern crate serde_json;
 
 use std::env;
 use std::io::Read;
@@ -13,6 +14,7 @@ use nickel::{Nickel, HttpRouter, QueryString};
 use nickel_postgres::{PostgresMiddleware, PostgresRequestExtensions};
 use uuid::Uuid;
 use nickel::status::StatusCode;
+use serde_json::Value;
 
 fn create_tables(conn: PooledConnection<PostgresConnectionManager>) {
     let _r = conn.execute(
@@ -59,13 +61,18 @@ fn main() {
             }
         };
 
-        let key = Uuid::new_v4().to_hyphenated_string();
+        let key = Uuid::new_v4();
 
-        println!("Name: {}; key: {}", &name, &key);
+        println!("Name: {}; key: {:?}", &name, &key);
 
-        // TODO: put UUID in db
+        let r = conn.execute(
+            "INSERT INTO services (key, name) VALUES ($1, $2)",
+            &[&key, &name]
+            );
 
-        key
+        println!("{:?}", r);
+
+        key.to_hyphenated_string()
     });
 
     app.post("/adduser", middleware! { |request, response|
@@ -81,6 +88,8 @@ fn main() {
                                       "Failed");
             }
         };
+
+        let data: Value = serde_json::from_str(&permissions).unwrap();
 
         let q = request.query();
 
@@ -104,6 +113,23 @@ fn main() {
             }
         };
 
+        let key = match Uuid::parse_str(key) {
+            Ok(u) => u,
+            Err(e) => {
+                println!("Error with uuid conversion: {}", e);
+                return response.error(StatusCode::BadRequest,
+                                      "Bad key format");
+            }
+        };
+
+        let r = conn.execute(
+            "INSERT INTO permissions (key, username, permissions)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (key, username) DO UPDATE SET
+                permissions=excluded.permissions",
+                &[&key, &username, &data]
+            );
+        println!("{:?}", r);
         // TODO: add username and permission to the database, if it works
         format!("You posted {}", permissions)
     });
@@ -119,6 +145,8 @@ fn main() {
                                       "No key specified");
             }
         };
+
+        let key = Uuid::parse_str(&key).unwrap();
         let username = match q.get("username") {
             Some(s) => s,
             None => {
@@ -128,7 +156,16 @@ fn main() {
             }
         };
 
-        // TODO: Get where key=key and username=username
+        let r = &conn.query(
+            "SELECT permissions FROM permissions
+            WHERE key=$1 and username=$2",
+            &[&key, &username]
+            ).unwrap();
+
+        let row = r.get(0);
+        let s: Value = row.get(0);
+
+        format!("{:?}", s)
     });
 
     let listen = match env::var("LISTEN") {

@@ -9,9 +9,11 @@ r2d2_postgres = "*"
 r2d2 = "*"
 openssl = "*"
 uuid = "*"
+serde_json = "*"
 
 [dependencies.nickel_postgres]
 git = "https://github.com/matthewbentley/nickel-postgres.git"
 
-[dependencies.cas]
-git = "https://github.com/hacsoc/rust-cas.git"
+[dependencies.postgres]
+version = "*"
+features = ["uuid", "serde_json"]

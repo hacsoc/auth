@@ -16,6 +16,15 @@ use uuid::Uuid;
 use nickel::status::StatusCode;
 use serde_json::Value;
 
+macro_rules! try_or_return {
+    ( $op:expr, $error:expr ) => {
+        match $op {
+            Some(v) => v,
+            None => return $error
+        }
+    }
+}
+
 fn create_tables(conn: PooledConnection<PostgresConnectionManager>) {
     let _r = conn.execute(
             "CREATE TABLE IF NOT EXISTS services (
@@ -52,18 +61,11 @@ fn main() {
     app.get("/register", middleware! { |request, response|
         let conn = request.db_conn();
 
-        let name = match request.query().get("service_name") {
-            Some(s) => s,
-            None => {
-                println!("No service_name, quitting");
-                return response.error(StatusCode::BadRequest,
-                                      "No service_name specified");
-            }
-        };
+        let name = try_or_return!(request.query().get("service_name"),
+            response.error(
+                StatusCode::BadRequest, "No service_name specified"));
 
         let key = Uuid::new_v4();
-
-        println!("Name: {}; key: {:?}", &name, &key);
 
         let r = conn.execute(
             "INSERT INTO services (key, name) VALUES ($1, $2)",
@@ -79,48 +81,23 @@ fn main() {
         let conn = request.db_conn();
 
         let mut body = vec![];
-        request.origin.read_to_end(&mut body).unwrap();
-        let permissions = match String::from_utf8(body) {
-            Ok(s) => s,
-            Err(e) => {
-                println!("Error decoding input string: {}", e);
-                return response.error(StatusCode::InternalServerError,
-                                      "Failed");
-            }
-        };
+        try_or_return!(request.origin.read_to_end(&mut body).ok(),
+                       response.error(StatusCode::InternalServerError,
+                                      "Failed"));
 
-        let data: Value = serde_json::from_str(&permissions).unwrap();
+        let permissions = try_or_return!(String::from_utf8(body).ok(),
+            response.error(StatusCode::InternalServerError, "Failed"));
+
+        let data: Value = try_or_return!(
+            serde_json::from_str(&permissions).ok(),
+            response.error(StatusCode::InternalServerError, "Failed"));
 
         let q = request.query();
 
-        // TODO: I'm writting a lot of code like this, to get stuff from the
-        // get/post params.  This should become a macro (or something)
-        let username = match q.get("username") {
-            Some(s) => s,
-            None => {
-                println!("No username, quitting");
-                return response.error(StatusCode::BadRequest,
-                                      "No username specified");
-            }
-        };
-
-        let key = match q.get("key") {
-            Some(s) => s,
-            None => {
-                println!("No key, quitting");
-                return response.error(StatusCode::BadRequest,
-                                      "No key specified");
-            }
-        };
-
-        let key = match Uuid::parse_str(key) {
-            Ok(u) => u,
-            Err(e) => {
-                println!("Error with uuid conversion: {}", e);
-                return response.error(StatusCode::BadRequest,
-                                      "Bad key format");
-            }
-        };
+        let username = try_or_return!(q.get("username"),
+            response.error(StatusCode::BadRequest, "No username specified"));
+        let key = try_or_return!(q.get("key").map(|s| Uuid::parse_str(s).ok()),
+            response.error(StatusCode::BadRequest, "No key specified"));
 
         let r = conn.execute(
             "INSERT INTO permissions (key, username, permissions)
@@ -129,38 +106,25 @@ fn main() {
                 permissions=excluded.permissions",
                 &[&key, &username, &data]
             );
-        println!("{:?}", r);
-        // TODO: add username and permission to the database, if it works
+        println!("{:?}", r); // TODO: something with r
         format!("You posted {}", permissions)
     });
 
     app.get("/getperms", middleware! { |request, response|
         let conn = request.db_conn();
         let q = request.query();
-        let key = match q.get("key") {
-            Some(s) => s,
-            None => {
-                println!("No key, quitting");
-                return response.error(StatusCode::BadRequest,
-                                      "No key specified");
-            }
-        };
+        let key = try_or_return!(q.get("key").map(|s| Uuid::parse_str(s).ok()),
+            response.error(StatusCode::BadRequest, "No key specified"));
 
-        let key = Uuid::parse_str(&key).unwrap();
-        let username = match q.get("username") {
-            Some(s) => s,
-            None => {
-                println!("No username, quitting");
-                return response.error(StatusCode::BadRequest,
-                                      "No username specified");
-            }
-        };
+        let username = try_or_return!(q.get("username"),
+            response.error(StatusCode::BadRequest, "No username specified"));
 
-        let r = &conn.query(
+        let r = try_or_return!(conn.query(
             "SELECT permissions FROM permissions
             WHERE key=$1 and username=$2",
             &[&key, &username]
-            ).unwrap();
+            ).ok(), response.error(StatusCode::InternalServerError,
+                              "Failed"));
 
         let row = r.get(0);
         let s: Value = row.get(0);

@@ -99,13 +99,14 @@ fn main() {
         let key = try_or_return!(q.get("key").map(|s| Uuid::parse_str(s).ok()),
             response.error(StatusCode::BadRequest, "No key specified"));
 
-        let r = conn.execute(
+        let r = try_or_return!(conn.execute(
             "INSERT INTO permissions (key, username, permissions)
                 VALUES ($1, $2, $3)
                 ON CONFLICT (key, username) DO UPDATE SET
                 permissions=excluded.permissions",
                 &[&key, &username, &data]
-            );
+            ).ok(),
+            response.error(StatusCode::InternalServerError, "Server error"));
         println!("{:?}", r); // TODO: something with r
         format!("You posted {}", permissions)
     });
@@ -124,8 +125,11 @@ fn main() {
             WHERE key=$1 and username=$2",
             &[&key, &username]
             ).ok(), response.error(StatusCode::InternalServerError,
-                              "Failed"));
+                              "Server Error"));
 
+        if r.len() < 1 {
+            return response.error(StatusCode::NotFound, "User not found");
+        }
         let row = r.get(0);
         let s: Value = row.get(0);
 

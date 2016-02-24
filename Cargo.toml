@@ -7,9 +7,14 @@ authors = ["Matthew Bentley <matthew.t.bentley@gmail.com>"]
 nickel = "*"
 r2d2_postgres = "*"
 r2d2 = "*"
-openssl = "*"
+openssl = "0.6.7"
 uuid = "*"
 serde_json = "*"
+rust-crypto = "*"
+rustc-serialize = "*"
+time = "*"
+hyper = "0.6.16"
+cookie = "0.1.21"
 
 [dependencies.nickel_postgres]
 git = "https://github.com/matthewbentley/nickel-postgres.git"
@@ -17,3 +22,6 @@ git = "https://github.com/matthewbentley/nickel-postgres.git"
 [dependencies.postgres]
 version = "*"
 features = ["uuid", "serde_json"]
+
+[dependencies.cas]
+git = "https://github.com/hacsoc/rust-cas.git"

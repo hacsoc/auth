@@ -275,7 +275,8 @@ fn main() {
                                 response.error(StatusCode::InternalServerError,
                                                "Server Error"));
             println!("{}", r);
-            format!("Inserted: {}, {}", caseid, slackid)
+            format!("You have successfully associated the slack id {} with the case id {}",
+                    slackid, caseid)
         } else {
             return response.redirect("/login");
         }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Set your slack id</title>
+    </head>
+
+    <body>
+        <h1>Enter your slack id here</h1>
+        <form action="/setslackid" method="POST" id="setslackid">
+            <fieldset>
+                <legend>Associate a slack id with your case id</legend>
+                <p>(This is different from your slack username. You can find your slack id by entering "slacksoc my id" in a channel with the slacksoc bot)</p>
+                <div>
+                    <label for="slackid">Slack ID:</label>
+                    <input name="slackid" type="text" placeholder="U000AAAAA" required autofocus />
+                </div>
+                <div>
+                    <input name="send" type="submit" value="send" />
+                </div>
+            </fieldset>
+        </form>
+    </body>
+</html>

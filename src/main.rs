@@ -12,6 +12,7 @@ extern crate hyper;
 extern crate rustc_serialize;
 extern crate cookie;
 extern crate core;
+extern crate url;
 
 use std::env;
 use std::io::Read;
@@ -38,6 +39,7 @@ use std::str::from_utf8;
 use std::str::Utf8Error;
 use std::fmt;
 use core::fmt::Debug;
+use url::form_urlencoded::parse;
 
 macro_rules! try_or_return {
     ( $op:expr, $error:expr ) => {
@@ -234,7 +236,46 @@ fn main() {
     let secret = hmac_secret.clone();
     app.get("/setslackid", middleware! { |request, response|
         if verify_auth_cookie(&secret, &request.origin.headers) {
-            "You logged in! A form will be here later"
+            let data = "";
+            return response.render("assets/slackform.html", &data);
+        } else {
+            return response.redirect("/login");
+        }
+    });
+
+    let secret = hmac_secret.clone();
+    app.post("/setslackid", middleware! { |request, response|
+        if verify_auth_cookie(&secret, &request.origin.headers) {
+            let token = match get_auth_token_from_headers(
+                &request.origin.headers) {
+                Some(v) => v,
+                None => return response.redirect("/login")
+            };
+            let caseid = token.username;
+            let conn = request.db_conn();
+            let mut s: Vec<u8> = Vec::new();
+            let _r = try_or!(request.origin.read_to_end(&mut s),
+                             response.error(StatusCode::InternalServerError,
+                                            "Server Error"));
+            let data = parse(&s[..]);
+            let mut slackid = "".to_string();
+            for (name, value) in data {
+                if name == "slackid" {
+                    slackid = value.to_string();
+                    break;
+                }
+            }
+
+            let r = try_or!(conn.execute("INSERT INTO users (caseid, slackid)
+                                    VALUES ($1, $2)
+                                    ON CONFLICT (caseid) DO UPDATE SET
+                                    slackid=excluded.slackid",
+                                    &[&caseid, &slackid]
+                                ),
+                                response.error(StatusCode::InternalServerError,
+                                               "Server Error"));
+            println!("{}", r);
+            format!("Inserted: {}, {}", caseid, slackid)
         } else {
             return response.redirect("/login");
         }
@@ -368,9 +409,20 @@ fn set_auth_cookie(hmac_secret: &str, username: &str, headers: &mut Headers) {
 }
 
 fn verify_auth_cookie(hmac_secret: &str, headers: &Headers) -> bool {
+    let to_verify = match get_auth_token_from_headers(headers) {
+        Some(v) => v,
+        None => return false
+    };
+    let good = AuthToken::new_with_time(hmac_secret, &to_verify.username,
+                                        to_verify.time);
+
+    AuthToken::verify_token(&good, &to_verify)
+}
+
+fn get_auth_token_from_headers(headers: &Headers) -> Option<AuthToken> {
     let cookies = match headers.get::<Cookie>() {
         Some(c) => c,
-        None => return false,
+        None => return None
     };
 
     let mut auth_string = "".to_string();
@@ -382,14 +434,8 @@ fn verify_auth_cookie(hmac_secret: &str, headers: &Headers) -> bool {
         }
     }
 
-    let to_verify = match AuthToken::from_str(&auth_string) {
-        Ok(v) => v,
-        Err(_) => {
-            return false;
-        }
-    };
-    let good = AuthToken::new_with_time(hmac_secret, &to_verify.username,
-                                        to_verify.time);
-
-    AuthToken::verify_token(&good, &to_verify)
+    match AuthToken::from_str(&auth_string) {
+        Ok(v) => Some(v),
+        Err(_) => None
+    }
 }

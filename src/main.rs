@@ -375,7 +375,7 @@ fn verify_auth_cookie(hmac_secret: &str, headers: &Headers) -> bool {
 
     let mut auth_string = "".to_string();
 
-    for c in cookies.as_slice() {
+    for c in cookies.iter() {
         if c.name == "auth_token" {
             auth_string = c.value.clone();
             break;

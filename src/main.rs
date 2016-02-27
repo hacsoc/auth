@@ -159,7 +159,7 @@ fn main() {
         format!("You posted {}", permissions)
     });
 
-    app.get("/getperms", middleware! { |request, response|
+    app.post("/getperms", middleware! { |request, response|
         let conn = request.db_conn();
         let q = request.query();
         let key = try_or_return!(q.get("key").map(|s| Uuid::parse_str(s).ok()),

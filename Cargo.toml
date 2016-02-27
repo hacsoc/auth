@@ -10,15 +10,14 @@ r2d2 = "*"
 openssl = "0.6.7"
 uuid = "*"
 serde_json = "*"
-rust-crypto = "*"
-rustc-serialize = "*"
-time = "*"
-hyper = "0.6.16"
 cookie = "0.1.21"
 url = "0.2.38"
 
 [dependencies.nickel_postgres]
 git = "https://github.com/matthewbentley/nickel-postgres.git"
+
+[dependencies.authtoken]
+git = "https://github.com/matthewbentley/authtoken.git"
 
 [dependencies.postgres]
 version = "*"

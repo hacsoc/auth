@@ -207,7 +207,7 @@ fn main() {
                                          "Server Error"));
         match cas.verify_from_request(&request.origin) {
             Ok(ServiceResponse::Success(v)) => {
-                set_auth_cookie(&secret, &v, response.headers_mut());
+                set_auth_cookie(&secret, v, response.headers_mut());
                 return response.redirect("/setslackid");
             }
             Ok(ServiceResponse::Failure(e)) => format!("error: {:?}", e),
@@ -220,7 +220,7 @@ fn main() {
 
     let secret = hmac_secret.clone();
     app.get("/setslackid", middleware! { |request, response|
-        if verify_auth_cookie(&secret, &request.origin.headers) {
+        if verify_auth_cookie::<String>(&secret, &request.origin.headers) {
             let data = "";
             return response.render("assets/slackform.html", &data);
         } else {
@@ -230,13 +230,13 @@ fn main() {
 
     let secret = hmac_secret.clone();
     app.post("/setslackid", middleware! { |request, response|
-        if verify_auth_cookie(&secret, &request.origin.headers) {
+        if verify_auth_cookie::<String>(&secret, &request.origin.headers) {
             let token = match get_auth_token_from_headers(
                 &request.origin.headers) {
                 Some(v) => v,
                 None => return response.redirect("/login")
             };
-            let caseid = token.data;
+            let caseid: String = token.data;
             let conn = request.db_conn();
             let mut s: Vec<u8> = Vec::new();
             let _r = try_or!(request.origin.read_to_end(&mut s),

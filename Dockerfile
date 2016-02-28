@@ -1,4 +1,4 @@
-FROM jimmycuadra/rust
+FROM matthewbentley/rust
 MAINTAINER Matthew Bentley "bentley@case.edu"
 
 ENV USER "Matthew Bentley"

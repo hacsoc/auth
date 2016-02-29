@@ -1,6 +1,5 @@
 extern crate r2d2;
 extern crate r2d2_postgres;
-extern crate openssl;
 #[macro_use] extern crate nickel;
 extern crate nickel_postgres;
 extern crate uuid;

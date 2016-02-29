@@ -6,12 +6,11 @@ dependencies = [
  "cas 0.2.0 (git+https://github.com/hacsoc/rust-cas.git)",
  "cookie 0.1.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "nickel 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "nickel_postgres 0.0.0 (git+https://github.com/matthewbentley/nickel-postgres.git)",
- "openssl 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nickel_postgres 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2_postgres 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 0.2.38 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -27,7 +26,7 @@ dependencies = [
 [[package]]
 name = "authtoken"
 version = "0.2.1"
-source = "git+https://github.com/matthewbentley/authtoken.git#bdc792aeaad49b3d681dc2adf28ee8a2e2a094a1"
+source = "git+https://github.com/matthewbentley/authtoken.git#cb3b9bd30e71f250c1733bc3ed79c1dd682a7f22"
 dependencies = [
  "cookie 0.1.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.6.16 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -54,7 +53,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "cas"
 version = "0.2.0"
-source = "git+https://github.com/hacsoc/rust-cas.git#1b3d35d587b6876ef33742b723a29c1bffcc8203"
+source = "git+https://github.com/hacsoc/rust-cas.git#e55af0b1f0a35e4a4816141abf71b43a5bb90718"
 dependencies = [
  "hyper 0.6.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 0.2.38 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -240,11 +239,10 @@ dependencies = [
 
 [[package]]
 name = "nickel_postgres"
-version = "0.0.0"
-source = "git+https://github.com/matthewbentley/nickel-postgres.git#de4bc879bd6bfcfc9b3a9823d52ff5e24c6a321e"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "nickel 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "openssl 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "plugin 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -355,7 +353,7 @@ dependencies = [
  "net2 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "phf 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "phf_codegen 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -441,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "num 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",

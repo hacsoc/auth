@@ -4,23 +4,20 @@ version = "0.2.0"
 authors = ["Matthew Bentley <matthew.t.bentley@gmail.com>"]
 
 [dependencies]
-nickel = "*"
-r2d2_postgres = "*"
-r2d2 = "*"
-openssl = "0.6.7"
-uuid = "*"
-serde_json = "0.6.0"
-cookie = "0.1.21"
-url = "0.2.38"
-
-[dependencies.nickel_postgres]
-git = "https://github.com/matthewbentley/nickel-postgres.git"
+nickel = "^0.7"
+r2d2_postgres = "^0.10"
+r2d2 = "^0.6"
+uuid = "^0.1"
+serde_json = "^0.6"
+cookie = "^0.1"
+url = "^0.2"
+nickel_postgres = "^0.1"
 
 [dependencies.authtoken]
 git = "https://github.com/matthewbentley/authtoken.git"
 
 [dependencies.postgres]
-version = "*"
+version = "^0.11"
 features = ["uuid", "serde_json"]
 
 [dependencies.cas]
